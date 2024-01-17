@@ -7,6 +7,7 @@ from uuid import uuid4
 from instagram.settings import MEDIA_ROOT
 import os
 
+
 class Join(APIView):
     def get(self, request):
         return render(request, 'user/join.html')

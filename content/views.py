@@ -8,7 +8,6 @@ from instagram.settings import MEDIA_ROOT
 import os
 
 
-
 class Main(APIView):
     def get(self, request):
         
