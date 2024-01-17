@@ -48,19 +48,138 @@ http://127.0.0.1:8000/main/
 - [x] AWS에 EC2로 서비스
 
   ```
-  - aws ec2 생성 (프리티어)
+  - aws EC2 생성 (프리티어)
+  
   - pip 설치 (sudo apt update -> sudo apt install python3-pip)
+  
   - 가상 환경 분리할 필요 없기 때문에 requirements 설치 및 서버 실행
+  
   - 서버 실행 시 외부랑 연결될 수 있도록 0.0.0.0:8000로 실행
 
+
   - 인스턴스 생성시 어디서든 접속이 가능하도록 설정한 것 처럼, 8000번 포트에 대한 설정을 해주어야함
-  - 보안 탭에서 인바운드(ec2로 들어오는 경우)규칙을 8000번 포트에 대한 접근을 허용하도록 설정
+  
+  - 보안 탭에서 인바운드(EC2로 들어오는 경우)규칙을 8000번 포트에 대한 접근을 허용하도록 설정
+  
   - 컴퓨터 및 핸드폰으로 접속 여부 확인
   ```
 
-- [ ] nginx, uwsgi를 이용하여 정상적인 웹서비스
+- [x] nginx, uwsgi를 이용하여 정상적인 웹서비스
+  - 기존 : 클라이언트 -> 장고(EC2)
+  - 시도할것 : 클라이언트 -> nginx(EC2 웹서버) -> uwsgi -> 장고(EC2)
+  - why ? : 정적인 WEB 서버와 동적인 WAS 서버의 분리 / 로드 밸런싱 / 라우팅 / 캐싱 등의 이점이 많음
+  
+  ```
+  - uwsgi 설치 : pip install uwsgi (uwsgi는 윈도우에서 지원이 안됨)
+  
+  - uwsgi로 서버 실행 : uwsgi --http :8000 --module instagram.wsgi (wsgi.py 파일이 있는 경로)
+  
+  - 여기까지 uwsgi라는 인터페이스를 통해 django 서버를 띄운 상태 (클라이언트 -> uwsgi -> django)
+  
+
+  - 웹서버를 위한 nginx 설치 : sudo apt-get install nginx
+  
+  - nginx는 설치와 동시에 실행이 됨 (확인 : sudo systemctl status nginx)
+  
+  - EC2에서 인바운드 규칙에 80번 포트를 열어 웹서버(nginx)에 접근할 수 있도록 함
+  
+  - EC2의 IP로 접근하면 nginx가 떠있는 것을 확인할 수 있음
+
+
+  - 클라이언트와 nginx는 연결이 되었지만, nginx와 uwsgi의 연결을 해주어야 함
+  
+  - 홈 경로에서 vi uwsgi.ini 파일을 생성
+  
+  - uwsgi 실행 : uwsgi -i uwsgi.ini
+  
+  - nginx 설정도 해주어야 함
+  
+  - nginx /etc/nginx/sites-available/default 파일을 수정하여 설정
+  
+  - nginx는 이미 실행중이기 때문에 설정을 적용하기 위해 재실행 : sudo systemctl restart nginx
+  
+  - Bad Gateway 오류가 뜬다면 /etc/nginx/nginx.conf 파일에서 user www-data를 user ubuntu로 변경
+  ```
+
+  - uwsgi.ini
+    ```
+    [uwsgi]
+    # nginx와 uwsgi의 통신을 무엇으로 할지 설정, socket 또는 port(네트워크)
+    socket = /home/ubuntu/uwsgi.sock
+    master = true
+    processes = 1
+    threads = 2
+    # wsgi file을 설정하기 위한 명령어
+    chdir = /home/ubuntu/instagram-clone-django
+    wsgi-file = instagram/wsgi.py
+    # socket을 파일로 관리하기 때문에 파일 권한 설정
+    chmod-socket = 666
+    # 로그나 기타 설정 파일들에 대한 삭제 유무
+    vacuum = true
+    # 로그 파일 위치
+    logger = file:/tmp/uwsgi.log
+    # python site packages 위치
+    pythonpath = /home/ubuntu/.local/lib/python3.10/site-packages
+    ```
+
+  - default
+    ```
+    # nginx가 바라볼 대상
+    upstream django {
+          server unix:///home/ubuntu/uwsgi.sock;
+    }
+    # nginx 서버의 기본 설정
+    server {
+            listen  80;
+            server_name localhost;
+            charset utf-8;
+            # 클라이언트와 nginx가 통신할때 데이터의 크기
+            client_max_body_size    80M;
+    
+            # uwsgi를 사용하기 때문에 아래의 설정이 팔요
+            location / {
+                    uwsgi_pass django;
+                    include /etc/nginx/uwsgi_params;
+            }
+    }
+    ```
+    
+- [x] uwsgi 자동 실행하도록 하기
+  ```
+  - nginx처럼 uwsgi도 자동으로 실행되도록 설정
+  
+  - /lib/systemd/system에서 uwsgi.service 파일 작성
+  
+  - /etc/systemd/system에서 sudo ln -s /lib/systemd/system/uwsgi.service uwsgi.service로 심볼릭 링크 생성
+
+  - service를 systemctl에 등록 : sudo systemctl daemon-reload
+  ```
+
+  - uwsgi.service
+    ```
+    [Unit]
+    Description=Django uWSGI service
+    After=syslog.target
+    
+    [Service]
+    # uwsgi의 절대경로를 사용해야함
+    ExecStart=/home/ubuntu/.local/bin/uwsgi -i /home/ubuntu/uwsgi.ini
+
+    # 항상 재실행
+    Restart=always
+    KillSignal=SIGNOUT
+    Type=notify
+    StandardError=syslog
+    NotifyAccess=all
+    
+    [Install]
+    WantedBy=multi-user.target
+    ```
+  
 
 - [ ] CI/CD 자동 배포 해보기
 
 - [ ] 캐시 써보기
+
+- [ ] AWS route53 ssl 인증서 등록 해보기
 
