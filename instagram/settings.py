@@ -80,9 +80,9 @@ WSGI_APPLICATION = 'instagram.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST' : '3.80.197.87',
-        'NAME': 'django-devops',
-        'USER': 'root',
+        'HOST' : 'database-1.ctw26mec04tb.us-east-1.rds.amazonaws.com',
+        'NAME': 'django_devops',
+        'USER': 'admin',
         'PASSWORD': 'password',
         'PORT': '3306',
         'OPTIONS': {'charset': 'utf8mb4'},
