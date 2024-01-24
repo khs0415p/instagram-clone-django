@@ -201,8 +201,51 @@ http://127.0.0.1:8000/main/
 
   - 환경변수 적용을 위해 uwsgi 재실행
   ```
+
+- [x] 테스트 코드 적용하기
+  ```
+  - 이전까지 실습 셋팅은 AWS의 RDS를 바라보게 설정되어 있기 때문에 개발과 배포 환경 각각의 settings.py 생성
+    - ex) settings.py (배포), settings_local.py(개발)
+
+  - 해당 settings 파일을 적용하기 위해 python manage.py runserver --settings=instagram.settings_local로 실행
+
+  - migrate와 같은 명령어도 위와 같이 settings 인자로 실행 가능
   
-- [ ] CI/CD 자동 배포 해보기
+  - CI/CD 실습을 위한 Django test 코드 작성
+  
+  - Django는 앱을 생성하면 기본적인 tests.py 파일을 제공해줌
+
+  - python manage.py test --settings=instagram.settings_local로 테스트 실행 (성공시 OK, 실패시 FAILED 정보를 제공)
+  ```
+  
+  
+- [x] CI 해보기
+
+  - Github Actions 탭에서 다양한 Action 생성
+     
+  - 우리는 Django Action을 사용 또는 실제 개발 환경에서 직접 Action을 만들 수 있음 (경로는 무조건 .github/workflows/action.yaml)
+     
+  - Github에서는 Action들을 실행할 runner를 제공해주지만 기업에서는 self hosted runner로 다른 컴퓨터 적용 가능
+    
+  - CI workflow는 .github/workflows에서 확인 가능
+
+
+- [x] CD 해보기
+
+  - CD를 하기 위한 workflow는 개발 환경에서 .github/workflows 폴더에 직접 생성
+     
+  - CD 작업은 CI가 끝나면 진행하기 때문에 `on` 부분에 `workflow_run` 옵션을 이용하여 CI가 끝난 후 실행되도록 설정
+     
+  - CD는 SSH(기존 applyboy/ssh 사용)를 이용하여 EC2서버에 접속하고, git pull과 서버 재실행을 해줌
+     
+  - SSH 접속을 위한 중요 정보들은 github actions의 secrets로 관리할 수 있음 (settings -> secrets and bariables -> actions)
+     
+  - EC2에 접근할 때 사용하는 host, username, key를 secrets으로 저장
+     
+  - 이후, Actions가 잘 동작하는지 확인
+     
+  - CI/CD는 위와 같이 활용하는것 뿐만 아니라 CI때 Docker 이미지를 만들어 CD때 배포하는 등 다양하게 활용할 수 있음
+
 
 - [ ] 캐시 써보기
 
