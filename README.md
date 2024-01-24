@@ -63,6 +63,8 @@ http://127.0.0.1:8000/main/
   
   - 컴퓨터 및 핸드폰으로 접속 여부 확인
   ```
+  
+<hr>
 
 - [x] nginx, uwsgi를 이용하여 정상적인 웹서비스
   - 기존 : 클라이언트 -> 장고(EC2)
@@ -143,7 +145,9 @@ http://127.0.0.1:8000/main/
             }
     }
     ```
-    
+
+<hr>
+
 - [x] uwsgi 자동 실행하도록 하기
   ```
   - nginx처럼 uwsgi도 자동으로 실행되도록 설정
@@ -175,7 +179,9 @@ http://127.0.0.1:8000/main/
     [Install]
     WantedBy=multi-user.target
     ```
-  
+    
+<hr>
+
 - [x] AWS RDS 사용해보기
   ```
   - EC2와 마찬가지로 RDS 서비스에서 데이터베이스(Aurora MySQL) 생성
@@ -191,6 +197,8 @@ http://127.0.0.1:8000/main/
   - 데이터베이스 툴로 적용이 되었는지 확인 후 uwsgi를 재실행
   ```
 
+<hr>
+
 - [x] secret 정보들 숨기기
   ```
   - uwsgi.ini 파일에 환경 변수를 적어줄 수 있음
@@ -201,6 +209,8 @@ http://127.0.0.1:8000/main/
 
   - 환경변수 적용을 위해 uwsgi 재실행
   ```
+
+<hr>
 
 - [x] 테스트 코드 적용하기
   ```
@@ -217,7 +227,8 @@ http://127.0.0.1:8000/main/
 
   - python manage.py test --settings=instagram.settings_local로 테스트 실행 (성공시 OK, 실패시 FAILED 정보를 제공)
   ```
-  
+
+<hr>
   
 - [x] CI 해보기
 
@@ -229,6 +240,7 @@ http://127.0.0.1:8000/main/
     
   - CI workflow는 .github/workflows에서 확인 가능
 
+<hr>
 
 - [x] CD 해보기
 
@@ -246,6 +258,7 @@ http://127.0.0.1:8000/main/
      
   - CI/CD는 위와 같이 활용하는것 뿐만 아니라 CI때 Docker 이미지를 만들어 CD때 배포하는 등 다양하게 활용할 수 있음
 
+<hr>
 
 - [x] AWS route53를 사용하여 SSL 인증서 등록 해보기 (유료 실습)
 
